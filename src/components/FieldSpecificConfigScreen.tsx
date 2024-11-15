@@ -42,10 +42,10 @@ export const FieldSpecificConfigScreen = ({
 }: {
   ctx: RenderManualFieldExtensionConfigScreenCtx;
 }) => {
-  const { parameters, errors } = ctx as typeof ctx & { parameters: PluginParameters };
+  const { parameters } = ctx as typeof ctx & { parameters: PluginParameters };
 
   const [selectedOptions, setSelectedOptions] = useState<DropdownOptions>(
-    parameters ? paramsToState(parameters) : [],
+    parameters?.allowedProviders?.length ? paramsToState(parameters) : allProviders,
   );
 
   const handleNewOptions = (newOptions: DropdownOptions) => {
@@ -61,7 +61,6 @@ export const FieldSpecificConfigScreen = ({
 
   return (
     <Canvas ctx={ctx}>
-      {JSON.stringify(errors)}
       <Form style={{ minHeight: "15em" }}>
         <SelectField
           name="allowedProviders"

@@ -35,8 +35,8 @@ connect({
 
   validateManualFieldExtensionParameters(_, parameters: PluginParameters) {
     if (!parameters.allowedProviders?.length) {
-      return { noProviders: "You must select at least one provider" };
+      return { allowedProviders: "You must select at least one provider" };
     }
-    return { test: "test" };
+    return { allowedProviders: "test" };
   },
 });
