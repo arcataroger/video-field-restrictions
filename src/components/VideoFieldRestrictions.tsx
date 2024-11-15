@@ -4,7 +4,8 @@ import type {
   ItemFormAdditionalProperties,
   RenderFieldExtensionCtx,
 } from "datocms-plugin-sdk";
-import { useEffect, useMemo, useState } from "react"; // For simpler flat records, we can just use `ctx.formValues[ctx.fieldPath]`, but that won't work if the video field
+import { useEffect, useMemo, useState } from "react";
+import {PluginParameters} from "./FieldSpecificConfigScreen.tsx"; // For simpler flat records, we can just use `ctx.formValues[ctx.fieldPath]`, but that won't work if the video field
 
 // For simpler flat records, we can just use `ctx.formValues[ctx.fieldPath]`, but that won't work if the video field
 // is inside a Modular Content Field block (because it becomes an array of blocks)
@@ -21,17 +22,21 @@ const getFieldValueByFieldPath = (
     );
 };
 
-type VideoParams = {
+export type KnownProviders = "youtube" | "vimeo" | "facebook";
+export type KnownLabels = (typeof FORMATTED_PROVIDER_NAMES)[keyof typeof FORMATTED_PROVIDER_NAMES]
+
+
+export type VideoParams = {
   url: string;
   title: string;
   width: number;
   height: number;
-  provider: "youtube" | "vimeo" | "facebook";
+  provider: KnownProviders;
   provider_uid: string;
   thumbnail_url: string;
 };
 
-const FORMATTED_PROVIDER_NAMES: Record<VideoParams["provider"], string> = {
+export const FORMATTED_PROVIDER_NAMES: Record<KnownProviders, string> = {
   youtube: "YouTube",
   vimeo: "Vimeo",
   facebook: "Facebook",
@@ -47,18 +52,15 @@ export const VideoFieldRestrictions = ({
 }: {
   ctx: RenderFieldExtensionCtx;
 }) => {
-  const { formValues, fieldPath, field, parentField, block } = ctx;
+  const { formValues, fieldPath, field, parentField, block, parameters } = ctx;
+  const {allowedProviders} = parameters as PluginParameters;
 
   const [isLastInputValid, setIsLastInputValid] = useState(true);
 
-  const allowedProviders = new Set<VideoParams["provider"]>([
-    "youtube",
-    "facebook",
-    "facebook",
-  ]);
+  const uniqueAllowedProviders = new Set<VideoParams["provider"]>(allowedProviders ?? []);
 
   const allowedProvidersString: string = joinWithAnd(
-    [...allowedProviders].map((provider) => FORMATTED_PROVIDER_NAMES[provider]),
+    [...uniqueAllowedProviders].map((provider) => FORMATTED_PROVIDER_NAMES[provider]),
   );
 
   const chosenProvider = useMemo<VideoParams["provider"] | undefined>(() => {
@@ -79,7 +81,7 @@ export const VideoFieldRestrictions = ({
     const parentLabel = parentField?.attributes?.label;
     const blockLabel = block?.blockModel?.attributes?.name;
 
-    if (!allowedProviders.has(chosenProvider)) {
+    if (!uniqueAllowedProviders.has(chosenProvider)) {
       (async () => {
         await ctx.setFieldValue(fieldPath, null);
         setIsLastInputValid(false);

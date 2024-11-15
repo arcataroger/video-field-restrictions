@@ -3,6 +3,10 @@ import "datocms-react-ui/styles.css";
 import ConfigScreen from "./entrypoints/ConfigScreen";
 import { render } from "./utils/render";
 import { VideoFieldRestrictions } from "./components/VideoFieldRestrictions.tsx";
+import {
+  FieldSpecificConfigScreen,
+  PluginParameters,
+} from "./components/FieldSpecificConfigScreen.tsx";
 
 connect({
   renderConfigScreen(ctx) {
@@ -16,14 +20,23 @@ connect({
         name: "Video Field Provider Restrictions",
         type: "addon",
         fieldTypes: ["video"],
+        configurable: true,
       },
     ];
   },
 
-  renderFieldExtension(fieldExtensionId: string, ctx: RenderFieldExtensionCtx) {
-    switch (fieldExtensionId) {
-      case "videoFieldRestrictions":
-        return render(<VideoFieldRestrictions ctx={ctx} />);
+  renderManualFieldExtensionConfigScreen(_, ctx) {
+    render(<FieldSpecificConfigScreen ctx={ctx} />);
+  },
+
+  renderFieldExtension(_, ctx: RenderFieldExtensionCtx) {
+    render(<VideoFieldRestrictions ctx={ctx} />);
+  },
+
+  validateManualFieldExtensionParameters(_, parameters: PluginParameters) {
+    if (!parameters.allowedProviders?.length) {
+      return { noProviders: "You must select at least one provider" };
     }
+    return { test: "test" };
   },
 });
